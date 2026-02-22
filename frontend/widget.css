@@ -1,0 +1,89 @@
+:root{
+  --bg1:#0b0f1a;
+  --bg2:#142a2a;
+  --card:#0f172aee;
+  --stroke:#ffffff1a;
+  --text:#e6eaf2;
+  --muted:#aab2c5;
+  --accent:#7c3aed;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+  color:var(--text);
+  background: radial-gradient(1200px 600px at 15% 10%, #4c1d95 0%, transparent 50%),
+              radial-gradient(900px 600px at 90% 20%, #065f46 0%, transparent 55%),
+              linear-gradient(160deg, var(--bg1), var(--bg2));
+}
+
+.kp-wrap{display:flex;justify-content:center;align-items:flex-start;padding:28px}
+.kp-card{
+  width:min(980px, 96vw);
+  border-radius:18px;
+  border:1px solid var(--stroke);
+  background:var(--card);
+  box-shadow:0 24px 60px #00000066;
+  overflow:hidden;
+}
+.kp-head{
+  display:flex;gap:12px;align-items:center;
+  padding:16px 18px;
+  border-bottom:1px solid var(--stroke);
+}
+.kp-logo{
+  width:38px;height:38px;border-radius:12px;
+  background: linear-gradient(135deg, #60a5fa, #a78bfa, #34d399);
+  box-shadow:0 10px 24px #00000055;
+}
+.kp-title{font-weight:800;font-size:18px;line-height:1}
+.kp-sub{color:var(--muted);font-size:13px;margin-top:4px}
+.kp-status{margin-left:auto;color:var(--muted);font-size:13px}
+
+.kp-body{padding:18px}
+.kp-thread{
+  height:520px; overflow:auto;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  padding:14px;
+  background:#00000022;
+}
+
+.msg{display:flex;margin:10px 0}
+.bubble{
+  max-width:min(720px, 85%);
+  padding:12px 14px;
+  border-radius:14px;
+  border:1px solid var(--stroke);
+  background:#0b1224;
+  color:var(--text);
+  line-height:1.35;
+  white-space:pre-wrap;
+}
+.me{justify-content:flex-end}
+.me .bubble{background:#1b1238;border-color:#a78bfa33}
+.bot .bubble{background:#0b1224}
+
+.kp-inputrow{display:flex;gap:10px;margin-top:12px}
+.kp-input{
+  flex:1;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--stroke);
+  background:#00000030;
+  color:var(--text);
+  outline:none;
+}
+.kp-input:focus{border-color:#a78bfa66}
+.kp-btn{
+  padding:12px 14px;
+  border-radius:12px;
+  border:0;
+  cursor:pointer;
+  background: linear-gradient(90deg, var(--accent), #5b21b6);
+  color:white;
+  font-weight:700;
+}
+.kp-hint{color:var(--muted);font-size:12px;margin-top:10px}

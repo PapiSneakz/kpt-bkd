@@ -1,0 +1,37 @@
+tenant_id: demo-company
+business_name: Demo Company
+notify_email: skybaloskie@gmail.com
+whatsapp_enabled: false
+whatsapp_number: '+31612345678'
+services:
+- key: plumbing
+  label: Loodgieter
+  description: Lekkage of verstopping
+  eta: Vandaag
+  enabled: true
+- key: electric
+  label: Elektricien
+  description: Storing of kortsluiting
+  eta: Vandaag
+  enabled: true
+- key: heating
+  label: CV / Verwarming
+  description: Geen warmte / storing
+  eta: Vandaag
+  enabled: true
+theme:
+  accent_color: '#7c3aed'
+  accent2_color: '#3b82f6'
+  logo_url: /tenant-assets/demo-company/logo.png
+  background_url: /tenant-assets/demo-company/background.jpeg
+content:
+  headline: Snel een vakman nodig?
+  subheadline: Binnen 2 minuten je aanvraag verstuurd.
+  panel_what_next_title: Wat gebeurt er nu?
+  panel_what_next_text: We nemen snel contact met je op om een afspraak te plannen.
+  panel_tip_title: Tip
+  panel_tip_text: Omschrijf het probleem zo duidelijk mogelijk.
+  privacy_line: Door te versturen ga je akkoord met onze privacyvoorwaarden.
+  success_message: Bedankt! We nemen zo snel mogelijk contact met je op.
+tenant_admin_username: demo
+tenant_admin_password_hash: 'pbkdf2_sha256$260000$93a309faa7316bcf9e0b8207609ffc62$efe27ffca15bac5708d0dd982815fba729678ecdba426d34d01d4157806dc7a1 '

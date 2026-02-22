@@ -1,0 +1,942 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KlusPilot • Snel een aanvraag doen</title>
+  <style>
+    :root{
+      --bg1:#070a16;
+      --bg2:#0b1230;
+      --card:#0f183bde;
+      --card2:#0b132fde;
+      --border:#ffffff1a;
+      --border2:#ffffff12;
+      --text:#f5f7ff;
+      --muted:#c0c7ee;
+      --muted2:#9aa3d1;
+
+      --accent:#7c3aed;
+      --accent2:#3b82f6;
+
+      /* ✅ tenant achtergrond */
+      --tenant-bg: none;
+
+      /* ✅ corner glows (aanpasbaar per tenant) */
+      --glow1: rgba(124,58,237,.45); /* linksboven */
+      --glow2: rgba(34,197,94,.18);  /* rechtsboven */
+      --glow3: rgba(59,130,246,.18); /* middenonder */
+
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --shadow: 0 30px 90px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 14px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 20% 10%, var(--glow1), transparent 55%),
+        radial-gradient(900px 600px at 85% 15%, var(--glow2), transparent 55%),
+        radial-gradient(800px 700px at 55% 80%, var(--glow3), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+      position:relative;
+    }
+
+    /* ✅ tenant background image overlay */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background-image: var(--tenant-bg);
+      background-size: cover;
+      background-position: center;
+      opacity: .22;
+      pointer-events:none;
+      z-index: -3;
+      filter: saturate(1.05) contrast(1.05);
+    }
+
+    a{color:inherit}
+
+    .wrap{max-width: 980px; margin: 0 auto; padding: 28px 18px 60px;}
+    .topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 14px; padding: 10px 6px 18px;
+    }
+    .brand{display:flex; align-items:center; gap: 12px;}
+    .logo{
+      width: 42px; height: 42px; border-radius: 14px;
+      background: linear-gradient(135deg, rgba(124,58,237,1), rgba(59,130,246,1));
+      box-shadow: 0 10px 30px rgba(124,58,237,.35);
+      position:relative; overflow:hidden;
+    }
+    .logo:before{
+      content:""; position:absolute; inset:-12px;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.45), transparent 60%);
+      transform: rotate(20deg);
+    }
+    .brand h1{margin:0; font-size: 20px; font-weight: 850; line-height:1.1}
+    .brand p{margin:3px 0 0; font-size: 12px; color: var(--muted2); letter-spacing:.2px}
+
+    .pill{
+      display:inline-flex; align-items:center; gap: 8px;
+      padding: 8px 12px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,.55);
+      box-shadow: 0 14px 35px rgba(0,0,0,.25);
+      font-size: 12px; color: var(--muted); white-space:nowrap;
+    }
+    .dot{width: 9px; height: 9px; border-radius: 999px; background: var(--warn);
+      box-shadow: 0 0 0 4px rgba(245,158,11,.15);}
+    .dot.good{background: var(--good); box-shadow: 0 0 0 4px rgba(34,197,94,.15);}
+    .dot.bad{background: var(--bad); box-shadow: 0 0 0 4px rgba(239,68,68,.15);}
+
+    .card{
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--card), var(--card2));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .progress{
+      display:flex; align-items:center; justify-content:space-between; gap: 14px;
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid var(--border2);
+      background: rgba(255,255,255,.02);
+    }
+    .progress .label{font-size: 12px; color: var(--muted);}
+    .progress .label strong{color: var(--text); font-weight: 850;}
+    .bar{
+      margin: 0 18px 0;
+      height: 8px; background: rgba(255,255,255,.08);
+      border-radius: 999px; overflow:hidden;
+      border: 1px solid rgba(255,255,255,.06);
+    }
+    .bar > div{
+      height:100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 999px; transition: width .35s ease;
+    }
+    .card-inner{padding: 18px;}
+    .grid{display:grid; grid-template-columns: 1.25fr .75fr; gap: 16px;}
+    @media (max-width: 900px){.grid{grid-template-columns:1fr}}
+
+    .step-title{margin:0; font-size: 28px; font-weight: 900; letter-spacing:.2px;}
+    .step-sub{margin: 8px 0 0; color: var(--muted); line-height:1.55; font-size: 14px;}
+
+    .panel{
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.02);
+      border-radius: var(--radius2);
+      padding: 14px;
+    }
+    .panel h3{margin:0 0 8px; font-size: 13px; color: var(--muted); font-weight: 850; letter-spacing:.2px;}
+    .panel p,.panel li{font-size:13px;color:var(--muted);line-height:1.55}
+    .panel ul{margin:8px 0 0 18px; padding:0}
+
+    .service-grid{
+      display:grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px; margin-top: 16px;
+    }
+    @media (max-width: 520px){.service-grid{grid-template-columns:1fr}}
+    .service{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      border-radius: 16px; padding: 14px;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+      position:relative; overflow:hidden;
+    }
+    .service:hover{background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.18);}
+    .service:active{transform: translateY(1px);}
+    .service.selected{
+      border-color: color-mix(in oklab, var(--accent) 75%, white 0%);
+      background: color-mix(in oklab, var(--accent) 18%, transparent 82%);
+      box-shadow: 0 18px 55px rgba(124,58,237,.15);
+    }
+    .service .name{font-weight: 900; font-size: 15px; margin:0;}
+    .service .desc{margin: 6px 0 0; font-size: 13px; color: var(--muted); line-height:1.5;}
+    .service .tag{
+      display:inline-flex; align-items:center; gap: 6px;
+      margin-top: 10px; font-size: 11px;
+      color: rgba(255,255,255,.86);
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.15);
+      padding: 6px 9px; border-radius: 999px;
+    }
+
+    .field{display:flex; flex-direction:column; gap: 6px; margin-top: 14px;}
+    label{font-size: 12px; color: var(--muted); font-weight: 850; letter-spacing:.2px;}
+    input, textarea{
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 12px;
+      outline:none;
+      font-size: 14px;
+      font-family: var(--sans);
+      transition: border-color .15s ease, background .15s ease;
+    }
+    input:focus, textarea:focus{
+      border-color: color-mix(in oklab, var(--accent) 70%, white 0%);
+      background: rgba(255,255,255,.05);
+    }
+    textarea{min-height: 110px; resize:vertical}
+
+    .actions{
+      display:flex; justify-content:space-between; gap: 12px;
+      margin-top: 18px; flex-wrap:wrap;
+    }
+    .actions .left, .actions .right{display:flex; gap: 10px; flex-wrap:wrap;}
+
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-weight: 850;
+      cursor:pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease, filter .15s ease;
+      user-select:none; text-decoration:none;
+    }
+    .btn:hover{background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.18);}
+    .btn:active{transform: translateY(1px);}
+    .btn.primary{
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-color: rgba(255,255,255,.15);
+      box-shadow: 0 16px 45px rgba(124,58,237,.25);
+    }
+    .btn.primary:hover{filter: brightness(1.06);}
+    .btn.whatsapp{
+      background: rgba(34,197,94,.14);
+      border-color: rgba(34,197,94,.28);
+    }
+
+    .hint{
+      margin-top: 14px;
+      border: 1px solid rgba(239,68,68,.25);
+      background: rgba(239,68,68,.08);
+      color: #ffd6d6;
+      border-radius: 12px;
+      padding: 12px 12px;
+      font-size: 13px;
+      line-height:1.5;
+      display:none;
+    }
+
+    .toast{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(0,0,0,.72);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.45);
+      max-width: 360px;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity .2s ease, transform .2s ease;
+      pointer-events:none;
+      z-index: 9999;
+      font-size: 13px;
+      line-height:1.5;
+    }
+    .toast.show{opacity: 1; transform: translateY(0);}
+    .toast strong{display:block;margin-bottom:4px}
+
+    .summary{
+      border: 1px solid var(--border2);
+      background: rgba(255,255,255,.02);
+      border-radius: var(--radius2);
+      padding: 14px;
+      margin-top: 14px;
+    }
+    .summary h3{margin:0 0 10px;font-size:13px;color:var(--muted);font-weight:850}
+    .row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed rgba(255,255,255,.08);font-size:13px}
+    .row:last-child{border-bottom:none}
+    .row span:first-child{color:var(--muted)}
+    .small{font-size: 12px; color: var(--muted2); margin-top: 10px; line-height:1.45;}
+
+    .success{
+      display:none;
+      border: 1px solid rgba(34,197,94,.28);
+      background: rgba(34,197,94,.10);
+      color: #d7ffe6;
+      border-radius: 16px;
+      padding: 14px;
+      margin-top: 14px;
+      line-height:1.55;
+    }
+    .success strong{color:#fff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" id="brandLogo"></div>
+        <div>
+          <h1 id="brandName">KlusPilot</h1>
+          <p id="brandTagline">Snel een aanvraag doen — binnen 2 minuten</p>
+        </div>
+      </div>
+
+      <div class="pill" id="conn-pill" aria-live="polite">
+        <span class="dot bad" id="conn-dot"></span>
+        <span id="conn-text">Even geen verbinding</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="progress">
+        <div class="label"><strong>Stap <span id="stepNumber">1</span> van 4</strong></div>
+        <div class="label" id="stepLabel">Dienst kiezen</div>
+      </div>
+
+      <div class="bar"><div id="progressFill"></div></div>
+
+      <div class="card-inner">
+        <div class="grid">
+          <div>
+            <h2 class="step-title" id="title">Even geen verbinding</h2>
+            <p class="step-sub" id="subtitle">We kunnen de aanvraagpagina nog niet laden. Probeer het opnieuw.</p>
+
+            <div class="hint" id="hintBox">
+              De server lijkt offline. Probeer het later nog eens.
+            </div>
+
+            <div id="wizardArea" style="display:none;">
+              <!-- STEP 1 -->
+              <div id="step1">
+                <div class="service-grid" id="serviceGrid"></div>
+              </div>
+
+              <!-- STEP 2 -->
+              <div id="step2" style="display:none;">
+                <div class="field">
+                  <label>Postcode</label>
+                  <input id="postcode" placeholder="Bijv. 1012AB" autocomplete="postal-code" />
+                </div>
+                <div class="field">
+                  <label>Adres (optioneel)</label>
+                  <input id="address" placeholder="Straat + huisnummer" autocomplete="street-address" />
+                </div>
+                <div class="field">
+                  <label>Omschrijving</label>
+                  <textarea id="description" placeholder="Bijv. kortsluiting in keuken / lekkage onder gootsteen..."></textarea>
+                </div>
+              </div>
+
+              <!-- STEP 3 -->
+              <div id="step3" style="display:none;">
+                <div class="field">
+                  <label>Naam</label>
+                  <input id="name" placeholder="Bijv. Jan Jansen" autocomplete="name" />
+                </div>
+                <div class="field">
+                  <label>E-mail (optioneel)</label>
+                  <input id="email" placeholder="Bijv. jan@email.nl" autocomplete="email" />
+                </div>
+                <div class="field">
+                  <label>Telefoonnummer</label>
+                  <input id="phone" placeholder="Bijv. 06 12345678" autocomplete="tel" />
+                </div>
+              </div>
+
+              <!-- STEP 4 -->
+              <div id="step4" style="display:none;">
+                <div class="summary">
+                  <h3>Samenvatting</h3>
+                  <div class="row"><span>Dienst</span><span id="sumService">—</span></div>
+                  <div class="row"><span>Postcode</span><span id="sumPostcode">—</span></div>
+                  <div class="row"><span>Adres</span><span id="sumAddress">—</span></div>
+                  <div class="row"><span>Omschrijving</span><span id="sumDesc">—</span></div>
+                  <div class="row"><span>Naam</span><span id="sumName">—</span></div>
+                  <div class="row"><span>E-mail</span><span id="sumEmail">—</span></div>
+                  <div class="row"><span>Telefoon</span><span id="sumPhone">—</span></div>
+                </div>
+
+                <div class="success" id="successBox">
+                  <strong id="successTitle">Gelukt!</strong>
+                  <span id="successText">Je aanvraag is verstuurd. We nemen zo snel mogelijk contact met je op.</span>
+                </div>
+
+                <p class="small" id="privacyLine">
+                  Door te versturen ga je akkoord dat jouw gegevens worden gedeeld met het bedrijf om de klus in te plannen.
+                </p>
+              </div>
+
+              <div class="actions">
+                <div class="left">
+                  <button class="btn" id="btnRetry">Opnieuw proberen</button>
+                  <button class="btn" id="btnPrev" style="display:none;">Terug</button>
+                </div>
+                <div class="right">
+                  <a class="btn whatsapp" id="btnWhatsApp" href="#" style="display:none;">💬 Chat via WhatsApp</a>
+                  <button class="btn primary" id="btnNext">Volgende</button>
+                  <button class="btn primary" id="btnSend" style="display:none;">Aanvraag versturen</button>
+                </div>
+              </div>
+            </div>
+
+            <div id="offlineArea">
+              <div class="actions" style="margin-top:14px;">
+                <div class="left">
+                  <button class="btn" id="btnOfflineRetry">Opnieuw proberen</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="panel">
+              <h3 id="panelWhatNextTitle">Wat gebeurt er na het versturen?</h3>
+              <p id="panelWhatNextText">We sturen je aanvraag direct door. Je wordt zo snel mogelijk gebeld of gemaild om de klus in te plannen.</p>
+              <ul id="panelWhatNextList">
+                <li>Je krijgt snel een reactie</li>
+                <li>Je aanvraag wordt bekeken door een vakman</li>
+                <li>Bij spoed: bel direct als dat nodig is</li>
+              </ul>
+            </div>
+
+            <div class="panel" style="margin-top:14px;">
+              <h3 id="panelTipTitle">Tip voor een snelle afhandeling</h3>
+              <p id="panelTipText">Beschrijf kort wat er aan de hand is (bijv. “kortsluiting in keuken”, “lekkage onder gootsteen”). Dat helpt om sneller te schakelen.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <script>
+    /********************************************************************
+     * URL PARAMS: tenant_id (optional for testing) + api override
+     ********************************************************************/
+    const params = new URLSearchParams(window.location.search);
+    const TENANT_ID = (params.get("tenant_id") || "").trim();
+
+    function getApiBaseUrl() {
+      const apiOverride = params.get("api");
+      if (apiOverride) return apiOverride.replace(/\/$/, "");
+
+      if (window.location.protocol === "file:") return "http://127.0.0.1:8000";
+
+      const host = window.location.hostname;
+      const protocol = window.location.protocol;
+      return `${protocol}//${host}:8000`;
+    }
+
+    const API_BASE = getApiBaseUrl();
+
+    function resolveAssetUrl(u) {
+      const s = String(u || "").trim();
+      if (!s) return "";
+      if (s.startsWith("http://") || s.startsWith("https://")) return s;
+      if (s.startsWith("/")) return `${API_BASE}${s}`;
+      return s;
+    }
+
+    /********************************************************************
+     * UI ELEMENTS
+     ********************************************************************/
+    const connDot = document.getElementById("conn-dot");
+    const connText = document.getElementById("conn-text");
+    const title = document.getElementById("title");
+    const subtitle = document.getElementById("subtitle");
+    const hintBox = document.getElementById("hintBox");
+    const brandName = document.getElementById("brandName");
+    const brandLogo = document.getElementById("brandLogo");
+    const brandTagline = document.getElementById("brandTagline");
+
+    const panelWhatNextTitle = document.getElementById("panelWhatNextTitle");
+    const panelWhatNextText = document.getElementById("panelWhatNextText");
+    const panelTipTitle = document.getElementById("panelTipTitle");
+    const panelTipText = document.getElementById("panelTipText");
+
+    const wizardArea = document.getElementById("wizardArea");
+    const offlineArea = document.getElementById("offlineArea");
+
+    const btnOfflineRetry = document.getElementById("btnOfflineRetry");
+    const btnRetry = document.getElementById("btnRetry");
+    const btnPrev = document.getElementById("btnPrev");
+    const btnNext = document.getElementById("btnNext");
+    const btnSend = document.getElementById("btnSend");
+    const btnWhatsApp = document.getElementById("btnWhatsApp");
+
+    const stepNumber = document.getElementById("stepNumber");
+    const stepLabel = document.getElementById("stepLabel");
+    const progressFill = document.getElementById("progressFill");
+
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const step3 = document.getElementById("step3");
+    const step4 = document.getElementById("step4");
+
+    const serviceGrid = document.getElementById("serviceGrid");
+
+    const postcode = document.getElementById("postcode");
+    const address = document.getElementById("address");
+    const description = document.getElementById("description");
+    const nameField = document.getElementById("name");
+    const emailField = document.getElementById("email");
+    const phoneField = document.getElementById("phone");
+
+    const sumService = document.getElementById("sumService");
+    const sumPostcode = document.getElementById("sumPostcode");
+    const sumAddress = document.getElementById("sumAddress");
+    const sumDesc = document.getElementById("sumDesc");
+    const sumName = document.getElementById("sumName");
+    const sumEmail = document.getElementById("sumEmail");
+    const sumPhone = document.getElementById("sumPhone");
+
+    const successBox = document.getElementById("successBox");
+    const successTitle = document.getElementById("successTitle");
+    const successText = document.getElementById("successText");
+    const privacyLine = document.getElementById("privacyLine");
+
+    const toast = document.getElementById("toast");
+
+    /********************************************************************
+     * STATE
+     ********************************************************************/
+    let currentStep = 1;
+    let services = [];
+    let selectedService = null;
+
+    let whatsappEnabled = false;
+    let whatsappNumber = null;
+
+    let tenantTheme = {};
+    let tenantContent = {};
+
+    /********************************************************************
+     * HELPERS
+     ********************************************************************/
+    function showToast(message, titleText="Info") {
+      toast.innerHTML = `<strong>${titleText}</strong>${message}`;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function setConnected(isConnected) {
+      if (isConnected) {
+        connDot.classList.remove("bad");
+        connDot.classList.add("good");
+        connText.textContent = "Verbonden";
+        hintBox.style.display = "none";
+        wizardArea.style.display = "block";
+        offlineArea.style.display = "none";
+        setHeaderForStep(currentStep);
+      } else {
+        connDot.classList.remove("good");
+        connDot.classList.add("bad");
+        connText.textContent = "Even geen verbinding";
+        hintBox.style.display = "block";
+
+        title.textContent = "Even geen verbinding";
+        subtitle.textContent = "We kunnen de aanvraagpagina nog niet laden. Probeer het opnieuw.";
+
+        wizardArea.style.display = "none";
+        offlineArea.style.display = "block";
+      }
+    }
+
+    function stepMeta(step){
+      if(step===1) return {label:"Dienst kiezen"};
+      if(step===2) return {label:"Locatie"};
+      if(step===3) return {label:"Contact"};
+      if(step===4) return {label:"Bevestigen"};
+      return {label:""};
+    }
+
+    function getContent(key, fallback){
+      const v = (tenantContent && tenantContent[key]) ? String(tenantContent[key]) : "";
+      return v.trim() ? v : fallback;
+    }
+
+    function setHeaderForStep(step) {
+      if (step === 1) {
+        title.textContent = getContent("step1_title", "Waar kunnen we je mee helpen?");
+        subtitle.textContent = getContent("step1_subtitle", "Kies de dienst die het beste past. Daarna vragen we kort om details.");
+      } else if (step === 2) {
+        title.textContent = getContent("step2_title", "Waar is de klus?");
+        subtitle.textContent = getContent("step2_subtitle", "Geef je postcode en een korte omschrijving. Dat helpt ons sneller schakelen.");
+      } else if (step === 3) {
+        title.textContent = getContent("step3_title", "Hoe kunnen we je bereiken?");
+        subtitle.textContent = getContent("step3_subtitle", "We nemen contact op om de klus in te plannen.");
+      } else if (step === 4) {
+        title.textContent = getContent("step4_title", "Controleer je aanvraag");
+        subtitle.textContent = getContent("step4_subtitle", "Klopt alles? Dan kun je versturen.");
+      }
+    }
+
+    function setStep(step) {
+      currentStep = step;
+
+      step1.style.display = "none";
+      step2.style.display = "none";
+      step3.style.display = "none";
+      step4.style.display = "none";
+
+      if (step === 1) step1.style.display = "block";
+      if (step === 2) step2.style.display = "block";
+      if (step === 3) step3.style.display = "block";
+      if (step === 4) step4.style.display = "block";
+
+      stepNumber.textContent = step;
+      stepLabel.textContent = stepMeta(step).label;
+      progressFill.style.width = `${(step / 4) * 100}%`;
+
+      btnPrev.style.display = step === 1 ? "none" : "inline-flex";
+      btnNext.style.display = step < 4 ? "inline-flex" : "none";
+      btnSend.style.display = step === 4 ? "inline-flex" : "none";
+
+      if(step === 4 && whatsappEnabled && whatsappNumber){
+        btnWhatsApp.style.display = "inline-flex";
+      } else {
+        btnWhatsApp.style.display = "none";
+      }
+
+      setHeaderForStep(step);
+    }
+
+    function sanitizePhoneForWhatsApp(num){
+      return (num || "").replace(/[^\d]/g,'');
+    }
+
+    function buildWhatsAppLink(){
+      if(!whatsappEnabled || !whatsappNumber) return "#";
+      const number = sanitizePhoneForWhatsApp(whatsappNumber);
+
+      const label = selectedService ? selectedService.label : "-";
+
+      const message =
+`Hoi! Ik wil graag een klus aanmelden.
+
+Dienst: ${label}
+Postcode: ${postcode.value || "-"}
+Adres: ${address.value || "-"}
+Omschrijving: ${description.value || "-"}
+Naam: ${nameField.value || "-"}
+Telefoon: ${phoneField.value || "-"}`;
+
+      const encoded = encodeURIComponent(message);
+      return `https://wa.me/${number}?text=${encoded}`;
+    }
+
+    function fillSummary() {
+      sumService.textContent = selectedService ? selectedService.label : "—";
+      sumPostcode.textContent = postcode.value || "—";
+      sumAddress.textContent = address.value || "—";
+      sumDesc.textContent = description.value || "—";
+      sumName.textContent = nameField.value || "—";
+      sumEmail.textContent = emailField.value || "—";
+      sumPhone.textContent = phoneField.value || "—";
+
+      btnWhatsApp.href = buildWhatsAppLink();
+    }
+
+    function validateStep(step){
+      if(step === 1){
+        if(!selectedService){
+          showToast("Kies eerst een dienst.", "Let op");
+          return false;
+        }
+      }
+      if(step === 2){
+        const pc = (postcode.value || "").trim();
+        if(!pc){
+          showToast("Vul je postcode in.", "Let op");
+          return false;
+        }
+        if((description.value || "").trim().length < 5){
+          showToast("Geef een korte omschrijving.", "Let op");
+          return false;
+        }
+      }
+      if(step === 3){
+        if((nameField.value || "").trim().length < 2){
+          showToast("Vul je naam in.", "Let op");
+          return false;
+        }
+        if((phoneField.value || "").trim().length < 8){
+          showToast("Vul je telefoonnummer in.", "Let op");
+          return false;
+        }
+      }
+      return true;
+    }
+
+    function applyTenantThemeAndContent(publicCfg){
+      tenantTheme = publicCfg.theme || {};
+      tenantContent = publicCfg.content || {};
+
+      brandName.textContent = publicCfg.business_name || "KlusPilot";
+      brandTagline.textContent = getContent("subheadline", brandTagline.textContent);
+
+      if (tenantTheme.accent_color) document.documentElement.style.setProperty("--accent", tenantTheme.accent_color);
+      if (tenantTheme.accent2_color) document.documentElement.style.setProperty("--accent2", tenantTheme.accent2_color);
+
+      if (tenantTheme.glow1) document.documentElement.style.setProperty("--glow1", tenantTheme.glow1);
+      if (tenantTheme.glow2) document.documentElement.style.setProperty("--glow2", tenantTheme.glow2);
+      if (tenantTheme.glow3) document.documentElement.style.setProperty("--glow3", tenantTheme.glow3);
+
+      const cacheBuster = Date.now();
+
+      if (tenantTheme.background_url) {
+        const bg = resolveAssetUrl(tenantTheme.background_url) + `?v=${cacheBuster}`;
+        document.documentElement.style.setProperty("--tenant-bg", `url('${bg}')`);
+      } else {
+        document.documentElement.style.setProperty("--tenant-bg", "none");
+      }
+
+      if (tenantTheme.font_family) {
+        document.documentElement.style.setProperty("--sans", tenantTheme.font_family + ", " + getComputedStyle(document.documentElement).getPropertyValue("--sans"));
+      }
+
+      if (tenantTheme.logo_url && brandLogo) {
+        const logo = resolveAssetUrl(tenantTheme.logo_url) + `?v=${cacheBuster}`;
+        brandLogo.style.backgroundImage = `url('${logo}')`;
+        brandLogo.style.backgroundSize = "cover";
+        brandLogo.style.backgroundPosition = "center";
+      } else {
+        brandLogo.style.backgroundImage = "";
+      }
+
+      panelWhatNextTitle.textContent = getContent("panel_what_next_title", panelWhatNextTitle.textContent);
+      panelWhatNextText.textContent  = getContent("panel_what_next_text", panelWhatNextText.textContent);
+      panelTipTitle.textContent      = getContent("panel_tip_title", panelTipTitle.textContent);
+      panelTipText.textContent       = getContent("panel_tip_text", panelTipText.textContent);
+      privacyLine.textContent        = getContent("privacy_line", privacyLine.textContent);
+
+      const succ = getContent("success_message", "Je aanvraag is verstuurd. We nemen zo snel mogelijk contact met je op.");
+      successText.textContent = succ;
+    }
+
+    /********************************************************************
+     * API CALLS
+     ********************************************************************/
+    async function checkApi() {
+      try {
+        const res = await fetch(`${API_BASE}/health`, { cache: "no-store" });
+        if (!res.ok) throw new Error("Health failed");
+        setConnected(true);
+        return true;
+      } catch (e) {
+        setConnected(false);
+        return false;
+      }
+    }
+
+    async function loadPublicConfig() {
+      try {
+        const url = TENANT_ID
+          ? `${API_BASE}/tenant/public-config?tenant_id=${encodeURIComponent(TENANT_ID)}`
+          : `${API_BASE}/tenant/public-config`;
+
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load public config");
+
+        const data = await res.json();
+
+        applyTenantThemeAndContent(data);
+
+        services = data.services || [];
+        whatsappEnabled = !!data.whatsapp_enabled;
+        whatsappNumber = data.whatsapp_number || null;
+
+        renderServices();
+      } catch (e) {
+        showToast("We konden de pagina niet laden. Probeer het later nog eens.", "Fout");
+      }
+    }
+
+    async function sendRequest() {
+      if(!validateStep(4)) return;
+
+      const payload = {
+        tenant_id: TENANT_ID || null,
+        service_key: selectedService ? selectedService.key : null,
+        service_label: selectedService ? selectedService.label : null,
+        postcode: (postcode.value || "").trim(),
+        address: (address.value || "").trim(),
+        description: (description.value || "").trim(),
+        name: (nameField.value || "").trim(),
+        email: (emailField.value || "").trim(),
+        phone: (phoneField.value || "").trim(),
+      };
+
+      btnSend.disabled = true;
+      btnSend.textContent = "Bezig…";
+
+      try {
+        const res = await fetch(`${API_BASE}/request`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error("Request failed");
+
+        const data = await res.json();
+
+        successBox.style.display = "block";
+        showToast("Aanvraag verstuurd!", "Gelukt");
+
+        whatsappEnabled = !!data.whatsapp_enabled;
+        whatsappNumber = data.whatsapp_number || whatsappNumber;
+
+        fillSummary();
+
+        btnSend.style.display = "none";
+        btnNext.style.display = "none";
+        btnPrev.style.display = "none";
+
+      } catch (e) {
+        showToast("Kon aanvraag niet versturen. Probeer het opnieuw.", "Fout");
+      } finally {
+        btnSend.disabled = false;
+        btnSend.textContent = "Aanvraag versturen";
+      }
+    }
+
+    /********************************************************************
+     * RENDER
+     ********************************************************************/
+    function renderServices() {
+      serviceGrid.innerHTML = "";
+
+      if(!services.length){
+        serviceGrid.innerHTML = `<div class="panel" style="grid-column:1/-1;">
+          <h3>Geen diensten beschikbaar</h3>
+          <p>Er zijn op dit moment geen diensten ingesteld voor dit bedrijf.</p>
+        </div>`;
+        return;
+      }
+
+      services.forEach(service => {
+        const el = document.createElement("div");
+        el.className = "service";
+        el.setAttribute("role","button");
+        el.setAttribute("tabindex","0");
+
+        const name = service.label || service.name || "Dienst";
+        const desc = (service.description || "").trim() || guessDescription(name);
+        const eta = (service.eta || "").trim() || "Vandaag";
+
+        el.innerHTML = `
+          <p class="name">${escapeHtml(name)}</p>
+          <p class="desc">${escapeHtml(desc)}</p>
+          <div class="tag">⚡ ${escapeHtml(eta)}</div>
+        `;
+
+        const select = () => {
+          selectedService = service;
+          [...document.querySelectorAll(".service")].forEach(x => x.classList.remove("selected"));
+          el.classList.add("selected");
+          showToast(`Gekozen: <b>${escapeHtml(name)}</b>`, "Dienst gekozen");
+        };
+
+        el.addEventListener("click", select);
+        el.addEventListener("keydown", (ev) => {
+          if(ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(); }
+        });
+
+        serviceGrid.appendChild(el);
+      });
+    }
+
+    function escapeHtml(s){
+      return String(s || "")
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function guessDescription(name){
+      const n = (name||"").toLowerCase();
+      if(n.includes("loodgieter") || n.includes("lekkage") || n.includes("verstopping")) return "Lek, verstopping, kraan of afvoerproblemen.";
+      if(n.includes("elektr") || n.includes("kortsluit") || n.includes("storing")) return "Storing, kortsluiting, stopcontact of groepenkast.";
+      if(n.includes("cv") || n.includes("verwarming") || n.includes("ketel")) return "Geen warmte, storing of onderhoud aan je CV.";
+      if(n.includes("airco") || n.includes("ventil")) return "Storing of onderhoud aan airco/ventilatie.";
+      if(n.includes("sanit")) return "Installatie of reparatie van sanitair.";
+      if(n.includes("zonne") || n.includes("paneel")) return "Storing, inspectie of advies voor zonnepanelen.";
+      return "We helpen je graag met deze dienst.";
+    }
+
+    /********************************************************************
+     * EVENTS
+     ********************************************************************/
+    btnOfflineRetry.addEventListener("click", async () => {
+      const ok = await checkApi();
+      if (ok) {
+        await loadPublicConfig();
+        setStep(1);
+      }
+    });
+
+    btnRetry.addEventListener("click", async () => {
+      const ok = await checkApi();
+      if (ok) {
+        await loadPublicConfig();
+        setStep(1);
+      }
+    });
+
+    btnPrev.addEventListener("click", () => {
+      if (currentStep > 1) setStep(currentStep - 1);
+    });
+
+    btnNext.addEventListener("click", () => {
+      if(!validateStep(currentStep)) return;
+
+      const next = Math.min(4, currentStep + 1);
+      if(next === 4) fillSummary();
+      setStep(next);
+    });
+
+    btnSend.addEventListener("click", () => {
+      fillSummary();
+      sendRequest();
+    });
+
+    btnWhatsApp.addEventListener("click", (e) => {
+      btnWhatsApp.href = buildWhatsAppLink();
+      if(btnWhatsApp.href === "#"){
+        e.preventDefault();
+        showToast("WhatsApp is niet beschikbaar voor dit bedrijf.", "Info");
+      }
+    });
+
+    /********************************************************************
+     * INIT
+     ********************************************************************/
+    (async function init() {
+      const ok = await checkApi();
+      if (ok) {
+        await loadPublicConfig();
+        setStep(1);
+      }
+    })();
+  </script>
+</body>
+</html>

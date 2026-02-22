@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>KlusPilot Demo</title>
+  <link rel="stylesheet" href="widget.css" />
+</head>
+<body>
+  <h3>KlusPilot widget demo</h3>
+  <p>Start docker compose, open deze file.</p>
+
+  <script src="widget.js"></script>
+  <script>
+    KlusPilot.init({ apiBase: "http://localhost:8000", tenantId: "demo-company" });
+  </script>
+</body>
+</html>

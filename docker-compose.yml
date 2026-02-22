@@ -1,0 +1,91 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    env_file: .env
+    environment:
+      # Tenant YAML configs
+      TENANTS_DIR: /app/tenants
+
+      # Assets (logo/background) go here (writable)
+      TENANT_ASSETS_DIR: /app/tenant-assets
+
+      # Uploads (lead photos/videos if you use /upload routes later)
+      UPLOAD_DIR: /app/uploads
+
+      # DB + Redis
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+psycopg://kluspilot:kluspilot@db:5432/kluspilot
+    volumes:
+      # ✅ jouw tenants zitten hier:
+      - ./app/tenants:/app/tenants:rw
+
+      # ✅ assets en uploads
+      - ./tenant-assets:/app/tenant-assets:rw
+      - ./uploads:/app/uploads:rw
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "kluspilot.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: kluspilot
+      POSTGRES_PASSWORD: kluspilot
+      POSTGRES_DB: kluspilot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    env_file: .env
+    environment:
+      TENANTS_DIR: /app/tenants
+      TENANT_ASSETS_DIR: /app/tenant-assets
+      UPLOAD_DIR: /app/uploads
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+psycopg://kluspilot:kluspilot@db:5432/kluspilot
+    volumes:
+      - ./app/tenants:/app/tenants:rw
+      - ./tenant-assets:/app/tenant-assets:rw
+      - ./uploads:/app/uploads:rw
+    depends_on:
+      - db
+      - redis
+    command: ["celery", "-A", "kluspilot.worker:celery_app", "worker", "--loglevel=INFO"]
+
+  beat:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    env_file: .env
+    environment:
+      TENANTS_DIR: /app/tenants
+      TENANT_ASSETS_DIR: /app/tenant-assets
+      UPLOAD_DIR: /app/uploads
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql+psycopg://kluspilot:kluspilot@db:5432/kluspilot
+    volumes:
+      - ./app/tenants:/app/tenants:rw
+      - ./tenant-assets:/app/tenant-assets:rw
+      - ./uploads:/app/uploads:rw
+    depends_on:
+      - db
+      - redis
+    command: ["celery", "-A", "kluspilot.worker:celery_app", "beat", "--loglevel=INFO"]
+
+volumes:
+  pgdata:
